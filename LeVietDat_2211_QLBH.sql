@@ -454,3 +454,87 @@ SELECT
 FROM MATHANG MH
 INNER JOIN TONGSOLUONGHANGBANDUOC() T ON MH.MaHang = T.MaHang;
 SELECT* FROM TONGSOLUONGHANGBANDUOC();
+--4.
+-- Xóa Trigger nếu đã tồn tại
+IF OBJECT_ID('TRG_CHITIETDATHANG', 'TR') IS NOT NULL
+BEGIN
+    DROP TRIGGER TRG_CHITIETDATHANG;
+    PRINT N'Trigger TRG_CHITIETDATHANG đã được xóa thành công.';
+END;
+GO
+
+-- Tạo Trigger xử lý trên bảng CHITIETDATHANG
+CREATE TRIGGER TRG_CHITIETDATHANG
+ON CHITIETDATHANG
+INSTEAD OF INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @SOHOADON NVARCHAR(50), @MAHANG NVARCHAR(50), @SOLUONG INT;
+
+    -- Lấy thông tin từ bản ghi vừa được thêm
+    SELECT @SOHOADON = SOHOADON, @MAHANG = MAHANG, @SOLUONG = SOLUONG
+    FROM INSERTED;
+
+    -- Kiểm tra xem bản ghi đã tồn tại hay chưa
+    IF EXISTS (SELECT 1 
+               FROM CHITIETDATHANG
+               WHERE SOHOADON = @SOHOADON AND MAHANG = @MAHANG)
+    BEGIN
+        -- Nếu tồn tại, cập nhật số lượng
+        UPDATE CHITIETDATHANG
+        SET SOLUONG = SOLUONG + @SOLUONG
+        WHERE SOHOADON = @SOHOADON AND MAHANG = @MAHANG;
+
+        -- Cập nhật tồn kho
+        IF EXISTS (SELECT 1 FROM MATHANG WHERE MAHANG = @MAHANG AND SOLUONG >= @SOLUONG)
+        BEGIN
+            UPDATE MATHANG
+            SET SOLUONG = SOLUONG - @SOLUONG
+            WHERE MAHANG = @MAHANG;
+
+            PRINT N'Cập nhật số lượng thành công. Mã hàng: ' + @MAHANG + ', Số lượng thêm: ' + CAST(@SOLUONG AS NVARCHAR(10));
+        END
+        ELSE
+        BEGIN
+            ROLLBACK TRANSACTION;
+            PRINT N'Không đủ hàng tồn kho để cập nhật. Mã hàng: ' + @MAHANG + ', Số lượng thêm: ' + CAST(@SOLUONG AS NVARCHAR(10));
+            RAISERROR ('KHONG DU HANG TON KHO DE CAP NHAT.', 16, 1);
+        END
+    END
+    ELSE
+    BEGIN
+        -- Nếu chưa tồn tại, thêm mới
+        IF EXISTS (SELECT 1 FROM MATHANG WHERE MAHANG = @MAHANG AND SOLUONG >= @SOLUONG)
+        BEGIN
+            INSERT INTO CHITIETDATHANG (SOHOADON, MAHANG, GIABAN, SOLUONG, MUCGIAMGIA)
+            SELECT SOHOADON, MAHANG, GIABAN, SOLUONG, MUCGIAMGIA
+            FROM INSERTED;
+
+            UPDATE MATHANG
+            SET SOLUONG = SOLUONG - @SOLUONG
+            WHERE MAHANG = @MAHANG;
+
+            PRINT N'Thêm mới thành công. Mã hàng: ' + @MAHANG + ', Số lượng: ' + CAST(@SOLUONG AS NVARCHAR(10));
+        END
+        ELSE
+        BEGIN
+            ROLLBACK TRANSACTION;
+            PRINT N'Không đủ hàng tồn kho để thêm mới. Mã hàng: ' + @MAHANG + ', Số lượng yêu cầu: ' + CAST(@SOLUONG AS NVARCHAR(10));
+            RAISERROR ('KHONG DU HANG TON KHO DE THEM MOI.', 16, 1);
+        END
+    END
+END;
+GO
+
+-- Kiểm tra Trigger
+-- Trường hợp thêm mới
+INSERT INTO CHITIETDATHANG (SOHOADON, MAHANG, GIABAN, SOLUONG, MUCGIAMGIA)
+VALUES 
+('HD001', 'MH001', 15000000, 10, 0);
+
+
+-- Kiểm tra dữ liệu sau khi chạy
+SELECT * FROM CHITIETDATHANG;
+SELECT * FROM MATHANG;
