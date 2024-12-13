@@ -1,8 +1,8 @@
-﻿
-CREATE DATABASE QLBH;
+
+CREATE DATABASE QLBH_ThanhTai
 GO
 -- sử dụng cơ sở dữ liệu quản lý bán hàng
-use QLBH;
+use QLBH_ThanhTai;
 go
 --tạo các bảng trong cơ sở dữ liệu
 create table KHACHHANG
@@ -111,7 +111,7 @@ GO
 	--Thêm dữ liệu vào bảng khách hàng
 INSERT INTO KHACHHANG (MAKHACHHANG, TENCONGTY, TENGIAODICH, DIACHI, EMAIL, DIENTHOAI, FAX)
 VALUES
-	('KH001', 'Cong Ty A', 'Giao Dich A', 'Dia Chi A', 'a@example.com', '0123456789', '0123456789'),
+	('KH001', 'Nha Cung Cap A', 'Giao Dich A', 'Dia Chi A', 'a@example.com', '0123456789', '0123456789'),
 	('KH002', 'Cong Ty B', 'Giao Dich B', 'Dia Chi B', 'b@example.com', '0123456789', '0123456789'),
 	('KH003', 'Cong Ty C', 'Giao Dich C', 'Dia Chi C', 'c@example.com', '0123456789', '0123456789'),
 	('KH004', 'Cong Ty D', 'Giao Dich D', 'Dia Chi D', 'd@example.com', '0123456789', '0123456789'),
@@ -127,11 +127,11 @@ VALUES
 	--Thêm dữ liệu vào bảng nhà cung cấp
 INSERT INTO NHACUNGCAP (MACONGTY, TENCONGTY, TENGIAODICH, DIACHI, DIENTHOAI, FAX, EMAIL)
 VALUES
-('NCC001', 'Cong Ty A', 'Giao Dich A', 'Dia Chi NCC1', '0123456789', '0123456789', 'ncc1@gmail.com'),
-('NCC002', 'Cong Ty B', 'Giao Dich B', 'Dia Chi NCC2', '0123456789', '0123456789', 'ncc2@gmail.com'),
-('NCC003', 'Cong Ty C', 'Giao Dich C', 'Dia Chi NCC3', '0123456789', '0123456789', 'ncc3@gmail.com'),
-('NCC004', 'Cong Ty D', 'Giao Dich D', 'Dia Chi NCC4', '0123456789', '0123456789', 'ncc4@gmail.com'),
-('NCC005', 'Cong Ty E', 'Giao Dich E', 'Dia Chi NCC5', '0123456789', '0123456789', 'ncc5@gmail.com');
+('NCC001', 'Nha Cung Cap A', 'Giao Dich A', 'Dia Chi NCC1', '0123456789', '0123456789', 'ncc1@gmail.com'),
+('NCC002', 'Nha Cung Cap B', 'Giao Dich B', 'Dia Chi NCC2', '0123456789', '0123456789', 'ncc2@gmail.com'),
+('NCC003', 'Nha Cung Cap C', 'Giao Dich C', 'Dia Chi NCC3', '0123456789', '0123456789', 'ncc3@gmail.com'),
+('NCC004', 'Nha Cung Cap D', 'Giao Dich D', 'Dia Chi NCC4', '0123456789', '0123456789', 'ncc4@gmail.com'),
+('NCC005', 'Nha Cung Cap E', 'Giao Dich E', 'Dia Chi NCC5', '0123456789', '0123456789', 'ncc5@gmail.com');
 --Thêm dữ liệu vào  bảng loại hàng
 INSERT INTO LOAIHANG (MALOAIHANG, TENLOAIHANG)
 VALUES
@@ -151,16 +151,277 @@ VALUES
 --Thêm dữ liệu vào bảng đơn đặt hàng
 INSERT INTO DONDATHANG (SOHOADON, MAKHACHHANG, MANHANVIEN, NGAYDATHANG, NGAYGIAOHANG, NGAYCHUYENHANG, NOIGIAOHANG) 
 VALUES
-('DDH001', 'KH001', 'NV001', getdate(), null, getdate()+3, 'Dia Chi Giao Hang 1'),
-('DDH002', 'KH002', 'NV002', getdate(), null, getdate()+3, 'Dia Chi Giao Hang 2'),
+('DDH001', 'KH001', 'NV001', getdate(), null, null, 'Dia Chi Giao Hang 1'),
+('DDH002', 'KH002', 'NV002', getdate(), null, null, 'Dia Chi Giao Hang 2'),
 ('DDH003', 'KH002', 'NV001', getdate(), null, getdate()+3, 'Dia Chi Giao Hang 3'),
 ('DDH004', 'KH003', 'NV004', getdate(), null, getdate()+3, 'Dia Chi Giao Hang 4'),
 ('DDH005', 'KH001', 'NV005', getdate(), null, getdate()+3, 'Dia Chi Giao Hang 5');
 
 INSERT INTO CHITIETDATHANG (SOHOADON, MAHANG, GIABAN, SOLUONG, MUCGIAMGIA) 
 VALUES
-('DDH001', 'MH001', 10000, 10, 0),
+('DDH001', 'MH001', 10000, 50, 0),
 ('DDH002', 'MH005', 20000, 20, 0),
 ('DDH003', 'MH003', 30000, 30, 0),
 ('DDH004', 'MH003', 40000, 40, 0),
 ('DDH005', 'MH005', 50000, 50, 0);
+-- Câu 1:
+UPDATE DONDATHANG
+SET NGAYCHUYENHANG=NGAYDATHANG
+WHERE NGAYCHUYENHANG IS NULL
+--CÂU 2:
+UPDATE MATHANG
+SET SOLUONG=SOLUONG*2
+FROM NHACUNGCAP NCC
+WHERE MATHANG.MACONGTY=NCC.MACONGTY AND NCC.TENCONGTY='Nha Cung Cap A';
+--CÂU 3:
+UPDATE KHACHHANG
+SET DIACHI = NCC.DIACHI,
+    DIENTHOAI = NCC.DIENTHOAI,
+    FAX = NCC.FAX,
+    EMAIL = NCC.EMAIL
+FROM KHACHHANG KH
+JOIN NHACUNGCAP NCC ON KH.TENCONGTY = NCC.TENCONGTY AND KH.TENGIAODICH = NCC.TENGIAODICH;
+--Câu 4:
+UPDATE NHANVIEN
+SET LUONGCOBAN = LUONGCOBAN * 1.5
+WHERE MANHANVIEN IN (
+    SELECT MANHANVIEN
+    FROM DONDATHANG DDH
+    JOIN CHITIETDATHANG CTDH ON DDH.SOHOADON = CTDH.SOHOADON
+    WHERE YEAR(DDH.NGAYDATHANG) = 2022
+    GROUP BY MANHANVIEN
+    HAVING SUM(CTDH.SOLUONG) > 100
+);
+--Câu 5
+--bước 1: tạo bảng tạm chứa số hoá đơn và tổng số lượng hàng bán ra cho từng hoá đơn
+WITH TongSoLuongTheoHoaDon AS (
+    SELECT SOHOADON, SUM(SOLUONG) AS TongSoLuong
+    FROM CHITIETDATHANG
+    GROUP BY SOHOADON--nhóm các bản ghi theo mã hoá đơn để tính toán tổng số lượng hàng bán ra
+),
+-- Bước 2: Tìm tổng số lượng lớn nhất
+--Bảng tạm này chỉ chứa 1 giá trị duy nhất là giá trị lớn nhất được lấy ra từ tổng số lượng theo hoá đơn
+SoLuongLonNhat AS (
+    SELECT MAX(TongSoLuong) AS SoLuongLonNhat
+    FROM TongSoLuongTheoHoaDon
+)
+-- Bước 3: Cập nhật phụ cấp cho những nhân viên phụ trách đơn hàng có tổng số lượng lớn nhất
+UPDATE NHANVIEN
+SET PHUCAP = PHUCAP + LUONGCOBAN * 0.5
+WHERE MANHANVIEN IN (
+    -- Lấy mã nhân viên phụ trách các đơn hàng có tổng số lượng lớn nhất
+    SELECT DONDATHANG.MANHANVIEN
+    FROM TongSoLuongTheoHoaDon
+    JOIN DONDATHANG ON TongSoLuongTheoHoaDon.SOHOADON = DONDATHANG.SOHOADON
+    WHERE TongSoLuongTheoHoaDon.TongSoLuong = (SELECT SoLuongLonNhat FROM SoLuongLonNhat)
+);
+
+--------
+--Cau 1:Cho biết danh sách các đối tác cung cấp hàng cho công ty
+SELECT DISTINCT NHACUNGCAP.TENCONGTY, NHACUNGCAP.TENGIAODICH, NHACUNGCAP.DIACHI, NHACUNGCAP.DIENTHOAI
+FROM NHACUNGCAP
+LEFT JOIN MATHANG ON NHACUNGCAP.MACONGTY = MATHANG.MACONGTY;
+--Cần lấy tất cả các nhà cung cấp dù nhà cung cấp đó chưa cung cấp mặt hàng nào cho công ty
+
+--Cau 2:Mã hàng, tên hàng và số lượng của các mặt hàng hiện có trong công ty.
+SELECT MAHANG, TENHANG, SOLUONG
+FROM MATHANG;
+
+
+--Cau 3:Họ tên và địa chỉ và năm bắt đầu làm việc của các nhân viên trong công ty
+select HO,TEN,DIACHI,year(NGAYLAMVIEC) as NAM_BAT_DAU_LAM_VIEC
+from NHANVIEN
+--Cau 4:Địa chỉ và điện thoại của nhà cung cấp có tên giao dịch [VINAMILK] là gì?
+select DIACHI,DIENTHOAI
+from NHACUNGCAP
+where TENGIAODICH='VINAMILK'
+--Cau 5:Cho biết mã và tên của các mặt hàng có giá lớn hơn 100000 và số lượng hiện có ít hơn 50
+select MAHANG,TENHANG
+from MATHANG
+where GIAHANG>100000 and SOLUONG <50
+--Cau 6:Cho biết mỗi mặt hàng trong công ty do ai cung cấp
+select MH.TENHANG, NCC.TENCONGTY
+from MATHANG MH
+join NHACUNGCAP NCC on MH.MACONGTY = NCC.MACONGTY;
+--Cau 7:Công ty [Việt Tiến] đã cung cấp những mặt hàng nào?
+select MH.TENHANG
+from MATHANG MH
+join NHACUNGCAP NCC on MH.MACONGTY = NCC.MACONGTY
+where ncc.TENCONGTY=N'Việt Tiến'
+--Cau 8:Loại hàng thực phẩm do những công ty nào cung cấp và địa chỉ của các công ty đó là gì?
+select ncc.MACONGTY,ncc.TENCONGTY,ncc.DIACHI
+from NHACUNGCAP ncc
+join MATHANG mh on mh.MACONGTY = ncc.MACONGTY
+join LOAIHANG lh on lh.MALOAIHANG=mh.MALOAIHANG
+where lh.TENLOAIHANG=N'Thực phẩm'
+--Cau 9:Những khách hàng nào (tên giao dịch) đã đặt mua mặt hàng Sữa hộp XYZ của công ty?
+select KHACHHANG.TENGIAODICH
+from CHITIETDATHANG
+join DONDATHANG on CHITIETDATHANG.SOHOADON = DONDATHANG.SOHOADON
+join KHACHHANG on DONDATHANG.MAKHACHHANG = KHACHHANG.MAKHACHHANG
+join MATHANG on CHITIETDATHANG.MAHANG = MATHANG.MAHANG
+where MATHANG.TENHANG = 'Sữa hộp XYZ';
+--Cau 10:Đơn đặt hàng số 1 do ai đặt và do nhân viên nào lập, thời gian và địa điểm giao hàng là ở đâu?
+select kh.TENCONGTY as CONGTYDATHANG,nv.HO + ' ' + nv.TEN AS NHANVIENLAPDON,ddh.NGAYDATHANG,ddh.NOIGIAOHANG
+from DONDATHANG ddh
+join NHANVIEN nv on nv.MANHANVIEN=ddh.MANHANVIEN
+join KHACHHANG kh on kh.MAKHACHHANG=ddh.MAKHACHHANG
+where ddh.SOHOADON='DDH001'
+--Cau 11:Hãy cho biết số tiền lương mà công ty phải trả cho mỗi nhân viên là bao nhiêu (lương = lương cơ bản + phụ cấp).
+select nv.HO +' '+nv.TEN AS HOTEN,(LUONGCOBAN+isnull(PHUCAP,0)) as TONGLUONG
+from NHANVIEN nv
+--isnull(column,value) để thay thế nhưng giá trị null thành giá trị 0
+--Cau 12:Hãy cho biết có những khách hàng nào lại chính là đối tác cung cấp hàng của công ty (tức là có cùng tên giao dịch).
+select kh.MAKHACHHANG,kh.TENCONGTY
+from KHACHHANG kh,NHACUNGCAP ncc
+where kh.TENGIAODICH=ncc.TENGIAODICH
+
+--Cau 13:Trong công ty có những nhân viên nào có cùng ngày sinh?
+select nv1.MANHANVIEN,nv1.HO,nv1.TEN,nv1.NGAYSINH
+from NHANVIEN nv1
+join NHANVIEN nv2
+	on month(nv1.NGAYSINH)=month(nv2.NGAYSINH)
+	and day(nv1.NGAYSINH)=day(nv2.NGAYSINH)
+	and nv1.MANHANVIEN<>nv2.MANHANVIEN--đảm bảo không so sánh với chính nó
+--Cau 13:
+SELECT MANHANVIEN, HO, TEN, NGAYSINH, DIACHI, DIENTHOAI, LUONGCOBAN, PHUCAP
+FROM NHANVIEN
+WHERE MONTH(NGAYSINH) IN (
+    SELECT MONTH(NGAYSINH)
+    FROM NHANVIEN
+    GROUP BY MONTH(NGAYSINH), DAY(NGAYSINH)
+    HAVING COUNT(*) > 1
+)
+AND DAY(NGAYSINH) IN (
+    SELECT DAY(NGAYSINH)
+    FROM NHANVIEN
+    GROUP BY MONTH(NGAYSINH), DAY(NGAYSINH)
+    HAVING COUNT(*) > 1
+);
+
+--Cau 14:Những đơn đặt hàng nào yêu cầu giao hàng ngay tại công ty đặt hàng và những đơn đó là của công ty nào
+--Cách hiểu 1: Công ty trong đề bài là công ty của khách hàng
+SELECT DONDATHANG.SOHOADON, KHACHHANG.TENCONGTY
+FROM DONDATHANG
+JOIN KHACHHANG ON DONDATHANG.MAKHACHHANG = KHACHHANG.MAKHACHHANG
+WHERE DONDATHANG.NOIGIAOHANG = KHACHHANG.DIACHI;
+
+--Cách hiểu 2: Công ty mà đề bài yêu cầu là công ty của nhà cung cấp đơn hàng
+SELECT DONDATHANG.SOHOADON, NHACUNGCAP.TENCONGTY
+FROM DONDATHANG
+JOIN CHITIETDATHANG ON DONDATHANG.SOHOADON = CHITIETDATHANG.SOHOADON
+JOIN MATHANG ON CHITIETDATHANG.MAHANG = MATHANG.MAHANG
+JOIN NHACUNGCAP ON MATHANG.MACONGTY = NHACUNGCAP.MACONGTY
+WHERE DONDATHANG.NOIGIAOHANG = NHACUNGCAP.DIACHI;
+
+--Cau 15:. Cho biết tên công ty, tên giao dịch, địa chỉ và điện thoại của các khách hàng và các nhà cung cấp hàng cho công ty.
+SELECT TENCONGTY,TENGIAODICH, DIACHI, DIENTHOAI
+FROM KHACHHANG
+UNION
+SELECT TENCONGTY,TENGIAODICH, DIACHI, DIENTHOAI
+FROM NHACUNGCAP;
+--Cau 16:Những mặt hàng nào chưa từng được khách hàng đặt mua?
+select mh.MAHANG,mh.TENHANG
+from MATHANG mh
+where mh.MAHANG not in (
+	select distinct MAHANG
+	from CHITIETDATHANG
+);
+--Cau 17:Những nhân viên nào của công ty chưa từng lập bất kỳ một hoá đơn đặt hàng nào?
+SELECT HO + ' ' + TEN AS HOTENNHANVIEN
+FROM NHANVIEN
+WHERE MANHANVIEN NOT IN (SELECT DISTINCT MANHANVIEN FROM DONDATHANG);
+--CAU 18:Những nhân viên nào của công ty có lương cơ bản cao nhất?
+SELECT HO + ' ' + TEN AS HOTEN, LUONGCOBAN
+FROM NHANVIEN
+WHERE LUONGCOBAN = (SELECT MAX(LUONGCOBAN) FROM NHANVIEN);
+
+-- 1. Tạo thủ tục ThemMatHang
+GO
+CREATE PROCEDURE ThemMatHang (
+    @MaMH NVARCHAR(10),
+    @TenMH NVARCHAR(100),
+    @Gia FLOAT,
+    @SoLuongTon INT
+)
+AS
+BEGIN
+    IF EXISTS (SELECT 1 FROM MATHANG WHERE MAHANG = @MaMH)
+    BEGIN
+        PRINT 'Mã mặt hàng đã tồn tại!'
+        RETURN
+    END
+    INSERT INTO MATHANG (MAHANG, TENHANG, GIAHANG, SOLUONG)
+    VALUES (@MaMH, @TenMH, @Gia, @SoLuongTon)
+    PRINT 'Thêm mặt hàng thành công!'
+END
+GO
+
+-- 2. Tạo thủ tục ThongKeSoLuongHangBan
+GO
+CREATE PROCEDURE ThongKeSoLuongHangBan (
+    @MaMH NVARCHAR(10),
+    @TongSoLuongBan INT OUTPUT
+)
+AS
+BEGIN
+    SELECT @TongSoLuongBan = SUM(SOLUONG)
+    FROM CHITIETDATHANG
+    WHERE MAHANG = @MaMH
+    IF @TongSoLuongBan IS NULL
+        SET @TongSoLuongBan = 0
+    PRINT 'Tổng số lượng hàng đã bán: ' + CAST(@TongSoLuongBan AS NVARCHAR)
+END
+GO
+
+-- 3. Tạo hàm ThongKeTongSoLuongBan
+GO
+CREATE FUNCTION ThongKeTongSoLuongBan()
+RETURNS @TongSoLuongBanTable TABLE (
+    MAMH NVARCHAR(10),
+    TongSoLuongBan INT
+)
+AS
+BEGIN
+    INSERT INTO @TongSoLuongBanTable (MAMH, TongSoLuongBan)
+    SELECT MAHANG, SUM(SOLUONG) AS TongSoLuongBan
+    FROM CHITIETDATHANG
+    GROUP BY MAHANG
+    RETURN
+END
+GO
+
+-- 4. Tạo Trigger KiemTraSoLuongHang
+GO
+CREATE TRIGGER KiemTraSoLuongHang
+ON CHITIETDATHANG
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM INSERTED i
+        JOIN MATHANG m ON i.MAHANG = m.MAHANG
+        WHERE i.SOLUONG > m.SOLUONG
+    )
+    BEGIN
+        PRINT 'Số lượng hàng bán vượt quá số lượng tồn kho!'
+        ROLLBACK TRANSACTION
+        RETURN
+    END
+
+    IF EXISTS (
+        SELECT 1
+        FROM INSERTED i
+        WHERE i.SOLUONG < 1
+    )
+    BEGIN
+        PRINT 'Số lượng bán không được nhỏ hơn 1!'
+        ROLLBACK TRANSACTION
+        RETURN
+    END
+
+    PRINT 'Thao tác hợp lệ!'
+END
+GO
+
